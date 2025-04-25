@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   MDBBtn,
   MDBContainer,
@@ -8,17 +8,29 @@ import {
   MDBCardBody,
   MDBInput,
 } from "mdb-react-ui-kit";
-import { useNavigate, Link } from "react-router-dom";  // Import Link from react-router-dom
-import "../css/Register.css"; // Make sure to import the CSS file
+import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
+import "../css/Register.css";
 
 function Register() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-
-    // After successful signup, navigate to login page
-    navigate("/login");
+    try {
+      const res = await axios.post("http://localhost:5000/api/auth/register", {
+        email,
+        password,
+      });
+      localStorage.setItem("token", res.data.token); // Optional: Save token if needed
+      navigate("/login");
+    } catch (err) {
+      console.error(err.response?.data?.msg || err.message);
+      setError(err.response?.data?.msg || "Registration failed");
+    }
   };
 
   return (
@@ -71,23 +83,28 @@ function Register() {
                 <MDBInput
                   wrapperClass="mb-4"
                   label="Email"
-                  id="form3"
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
                 <MDBInput
                   wrapperClass="mb-2"
                   label="Password"
-                  id="form4"
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+
+                {error && (
+                  <p className="text-danger text-center mb-3">{error}</p>
+                )}
 
                 <MDBBtn type="submit" className="w-100 mb-4" size="md">
                   Sign Up
                 </MDBBtn>
 
-                {/* Link below the submit button */}
                 <p className="text-center mt-2">
                   Already have an account?{" "}
                   <Link to="/login" className="text-decoration-none">
